@@ -1,0 +1,19 @@
+#Just record change of /etc/logrotate.d/rsyslog
+ 
+su
+/var/log/syslog
+{
+        rotate 10
+        size 1k   
+        create    
+        dateext
+        dateformat -%Y-%m-%d.log
+        missingok
+        notifempty # not rotate if log file is empty
+        delaycompress
+        compress
+        postrotate
+        /usr/lib/rsyslog/rsyslog-rotate
+        endscript
+}
+
