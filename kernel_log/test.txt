@@ -1,0 +1,2 @@
+dmesg --follow > /xxx/%Y-%H-%M_kernel.log
+ps -elf | grep dmesg
