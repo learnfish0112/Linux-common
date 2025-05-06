@@ -1,10 +1,9 @@
 #include "linux_common/common.h"
-
 #define NAME_MAX 1024
 #define BUF_LEN ((sizeof(struct inotify_event) + NAME_MAX + 1))
 #define TEST_FILE_PATH "./2.txt"
 
-static void /* Display information from inotify_event structure */
+    static void /* Display information from inotify_event structure */
 displayInotifyEvent(const struct inotify_event *i)
 {
     printf(" wd =%2d; ", i->wd);
@@ -46,31 +45,35 @@ int main()
         perror("Inotify_add_watch fail");
         exit(1);
     }
+    FILE* fp = NULL;
     char buf[BUF_LEN];
-    bzero(buf, sizeof(buf));
 
-    printf("monitor start\n");
-    int readNum = read(inotify_fd, buf, sizeof(buf));
-    if(readNum == 0) {
-        printf("what happened lead read 0?\n");
-    } else if(readNum == -1) {
-        perror("read failed");
-        exit(1);
-    } else {
-        printf("readNum = %d\n", readNum);
-        struct inotify_event *event;
-        event = (inotify_event *)buf;
-        displayInotifyEvent(event);
+    while(1) {
+        printf("monitor start\n");
+        bzero(buf, sizeof(buf));
+        int readNum = read(inotify_fd, buf, sizeof(buf));
+        if(readNum == 0) {
+            printf("what happened lead read 0?\n");
+        } else if(readNum == -1) {
+            perror("read failed");
+            exit(1);
+        } else {
+            printf("readNum = %d\n", readNum);
+            struct inotify_event *event;
+            event = (inotify_event *)buf;
+            displayInotifyEvent(event);
 
-        if(event && IN_MODIFY) {
-            char file_content[1024];
-            bzero(file_content, sizeof(file_content));
-            FILE* fp = fopen(TEST_FILE_PATH, "r");
-            ERROR_CHECK(fp, NULL, "fopen failed");
-            
-            size_t sz = fread(file_content, 1, sizeof(file_content), fp);
-            printf("sz = %ld, file_content:%s\n", sz, file_content);
-            fclose(fp);
+            if(event && IN_MODIFY) {
+                char file_content[1024];
+                bzero(file_content, sizeof(file_content));
+                fp = fopen(TEST_FILE_PATH, "r");
+                ERROR_CHECK(fp, NULL, "fopen failed");
+
+                size_t sz = fread(file_content, 1, sizeof(file_content), fp);
+                printf("sz = %ld, file_content:%s\n", sz, file_content);
+                fclose(fp);
+                fp = NULL;
+            }
         }
     }
 
